@@ -211,9 +211,7 @@ resource "aws_lambda_function" "default" {
   timeout          = 60                                                   # 60 sec
 
   environment {
-    variables = {
-      DEBUG = "True"
-    }
+    variables = "${var.envs}"
   }
 
   depends_on = ["aws_cloudwatch_log_group.default", "aws_iam_role_policy.default", "null_resource.npm"]

@@ -31,3 +31,9 @@ variable "tags" {
   default     = {}
   description = "Additional tags (e.g. `map('BusinessUnit','XYZ')`"
 }
+
+variable "envs" {
+  type        = "map"
+  default     = {}
+  description = "Environments variable"
+}
