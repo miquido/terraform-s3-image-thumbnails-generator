@@ -1,5 +1,5 @@
-name: miquido-node-image-resizer-lambda
-bitbucket_repo: miquido-node-image-resizer-lambda
+name: terraform-s3-image-thumbnails-generator
+bitbucket_repo: terraform-s3-image-thumbnails-generator
 badges: []
 related: []
 # description: ""
@@ -8,8 +8,13 @@ usage: |-
   Terraform:
 
   ```hcl
-  module {
-    source              = "git::ssh://git@bitbucket.org/miquido/miquido-node-image-resizer-lambda.git?ref=master"
+  module "s3-image-resizer" {
+    source = "git::ssh://git@bitbucket.org/miquido/miquido-node-image-resizer-lambda?ref=master"
+
+    namespace = "${var.project}"
+    stage     = "${var.environment}"
+    thumbnail_widths = [1200,800,600,400,200]
+
   }
   ```
 include:
@@ -18,3 +23,5 @@ include:
 contributors:
   - name: "Paweł Jędruch"
     github: "pawcik"
+
+

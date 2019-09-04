@@ -31,3 +31,8 @@ variable "tags" {
   default     = {}
   description = "Additional tags (e.g. `map('BusinessUnit','XYZ')`"
 }
+
+variable "thumbnail_widths" {
+  type        = "list"
+  description = "Target widths of generated thumbnails"
+}

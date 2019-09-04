@@ -212,7 +212,7 @@ resource "aws_lambda_function" "default" {
 
   environment {
     variables = {
-      DEBUG = "True"
+      THUMBNAIL_WIDTHS = "${join(",", var.thumbnail_widths)}"
     }
   }
 
