@@ -1,0 +1,20 @@
+name: miquido-node-image-resizer-lambda
+bitbucket_repo: miquido-node-image-resizer-lambda
+badges: []
+related: []
+# description: ""
+usage: |-
+
+  Terraform:
+
+  ```hcl
+  module {
+    source              = "git::ssh://git@bitbucket.org/miquido/miquido-node-image-resizer-lambda.git?ref=master"
+  }
+  ```
+include:
+  - "docs/terraform.md"
+  - "docs/targets.md"
+contributors:
+  - name: "Paweł Jędruch"
+    github: "pawcik"
