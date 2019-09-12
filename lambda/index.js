@@ -14,6 +14,10 @@ const resizeOriginalImage = async records => Promise.all(records
   .flatMap(b => b.Records)
   .map(r => ({bucketId: r.s3.bucket.name, key: r.s3.object.key}))
   .map(async s3Object => {
+    if(!isNaN(s3Object.key.match(/([^/]+)/))) {
+      widths.filter( width => width < Number(s3Object.key.match(/([^/]+)/)))
+      return widths;
+    }
     const originalImage = (await getOriginalImage(s3Object.bucketId, s3Object.key)).Body;
     return Promise.all(widths.map(async width => {
       const image = await sharp(originalImage).resize( {width: width} ).toBuffer();
