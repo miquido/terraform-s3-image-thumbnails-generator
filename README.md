@@ -19,6 +19,11 @@ module "s3-image-resizer" {
 
   namespace = "${var.project}"
   stage     = "${var.environment}"
+  envs =
+      {
+        "SIZES" = "1200,800,600,400,200",
+        "DEBUG" = "True"
+      }
 }
 ```
 ## Inputs
@@ -27,6 +32,7 @@ module "s3-image-resizer" {
 |------|-------------|:----:|:-----:|:-----:|
 | attributes | Additional attributes (e.g. `1`) | list | `<list>` | no |
 | delimiter | Delimiter to be used between `namespace`, `stage`, `name` and `attributes` | string | `-` | no |
+| envs | Environments variable | map | `<map>` | no |
 | name | Solution name, e.g. 'app' or 'cluster' | string | `s3-image-resizer` | no |
 | namespace | Namespace, which could be your organization name, e.g. 'eg' or 'cp' | string | - | yes |
 | stage | Stage, e.g. 'prod', 'staging', 'dev', or 'test' | string | - | yes |

@@ -13,6 +13,11 @@ usage: |-
 
     namespace = "${var.project}"
     stage     = "${var.environment}"
+    envs =
+        {
+          "SIZES" = "1200,800,600,400,200",
+          "DEBUG" = "True"
+        }
   }
   ```
 include:
@@ -21,3 +26,5 @@ include:
 contributors:
   - name: "Paweł Jędruch"
     github: "pawcik"
+
+
