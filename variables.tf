@@ -32,7 +32,7 @@ variable "tags" {
   description = "Additional tags (e.g. `map('BusinessUnit','XYZ')`"
 }
 
-variable "thumbnails_widths" {
+variable "thumbnail_widths" {
   type        = "list"
   default     = []
   description = "List of thumnails width created from uploaded image"
