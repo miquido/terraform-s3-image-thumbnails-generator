@@ -33,7 +33,7 @@ exports.lambda_handler = async event => {
   } catch(err) {
     console.log(err);
     return {
-      status: 500,
+      status: 406,
       code: err.code,
       message: err.message
     }
