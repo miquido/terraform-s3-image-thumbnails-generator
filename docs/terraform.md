@@ -8,6 +8,7 @@
 | namespace | Namespace, which could be your organization name, e.g. 'eg' or 'cp' | string | - | yes |
 | stage | Stage, e.g. 'prod', 'staging', 'dev', or 'test' | string | - | yes |
 | tags | Additional tags (e.g. `map('BusinessUnit','XYZ')` | map | `<map>` | no |
+| thumbnail_widths | Target widths of generated thumbnails | list | - | yes |
 
 ## Outputs
 
