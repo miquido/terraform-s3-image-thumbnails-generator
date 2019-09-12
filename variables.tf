@@ -34,6 +34,5 @@ variable "tags" {
 
 variable "thumbnail_widths" {
   type        = "list"
-  default     = []
-  description = "List of thumnails width created from uploaded image"
+  description = "Target widths of generated thumbnails"
 }

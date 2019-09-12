@@ -16,8 +16,8 @@ const resizeOriginalImage = async records => Promise.all(records
   .map(async s3Object => {
     const originalImage = (await getOriginalImage(s3Object.bucketId, s3Object.key)).Body;
     return Promise.all(widths.map(async width => {
-      const image = await sharp(originalImage).resize(width).toBuffer();
-      const destKey = `thumbnails/${size}/${s3Object.key.replace('original/', '')}`;
+      const image = await sharp(originalImage).resize( {width: width} ).toBuffer();
+      const destKey = `thumbnails/${width}/${s3Object.key.replace('original/', '')}`;
 
       return s3.putObject({Bucket: s3Object.bucketId, Body: image, Key: destKey, ACL: 'public-read'}).promise();
     }))
@@ -32,5 +32,10 @@ exports.lambda_handler = async event => {
     };
   } catch(err) {
     console.log(err);
+    return {
+      status: 500,
+      code: err.code,
+      message: err.message
+    }
   }
 };

@@ -211,7 +211,9 @@ resource "aws_lambda_function" "default" {
   timeout          = 60                                                   # 60 sec
 
   environment {
-    variables = "${var.thumbnail_widths}"
+    variables = {
+      THUMBNAIL_WIDTHS = "${join(",", var.thumbnail_widths)}"
+    }
   }
 
   depends_on = ["aws_cloudwatch_log_group.default", "aws_iam_role_policy.default", "null_resource.npm"]
