@@ -7,7 +7,16 @@ Array.prototype.flatMap = function(lambda) {
   return Array.prototype.concat.apply([], this.map(lambda));
 };
 
-const getOriginalImage = async (bucket, key) => await s3.getObject({ Bucket: bucket, Key: key }).promise();
+const getOriginalImage = async (bucket, key) => s3.getObject({ Bucket: bucket, Key: key }).promise();
+
+const putImageToS3 = async (s3Object, imageBody, width, metadata) => {
+  return s3.putObject({Bucket: s3Object.bucketId,
+    Body: imageBody,
+    Key: `thumbnails/${width}/${s3Object.key.replace('original/', '')}`,
+    ACL: 'public-read',
+    ContentType: `image/${metadata.format}`}
+  ).promise();
+};
 
 const resizeOriginalImage = async records => Promise.all(records
   .map(r => JSON.parse(r.body))
@@ -15,12 +24,18 @@ const resizeOriginalImage = async records => Promise.all(records
   .map(r => ({bucketId: r.s3.bucket.name, key: r.s3.object.key}))
   .map(async s3Object => {
     const originalImage = (await getOriginalImage(s3Object.bucketId, s3Object.key)).Body;
-    return Promise.all(widths.map(async width => {
+    const originalImageMetadata = await sharp(originalImage).metadata();
+    const filteredWidthsSmaller = widths.filter(width => width < originalImageMetadata.width);
+    const filteredWidthsBigger = widths.filter(width => width >= originalImageMetadata.width);
+    const putBigger = filteredWidthsBigger.map(async width => {
+      return putImageToS3(s3Object, originalImage, width, originalImageMetadata);
+    });
+    const putSmaller = filteredWidthsSmaller.map(async width => {
       const image = await sharp(originalImage).resize( {width: width} ).toBuffer();
-      const destKey = `thumbnails/${width}/${s3Object.key.replace('original/', '')}`;
+      return putImageToS3(s3Object, image, width, originalImageMetadata);
+    });
 
-      return s3.putObject({Bucket: s3Object.bucketId, Body: image, Key: destKey, ACL: 'public-read'}).promise();
-    }))
+    return Promise.all(putBigger.concat(putSmaller));
   })
 );
 
@@ -28,12 +43,12 @@ exports.lambda_handler = async event => {
   try {
     await resizeOriginalImage(event.Records);
     return {
-      "statusCode": 200
+      statusCode: 200
     };
   } catch(err) {
     console.log(err);
     return {
-      status: 400,
+      statusCode: 400,
       code: err.code,
       message: err.message
     }
