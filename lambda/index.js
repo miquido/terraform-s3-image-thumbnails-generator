@@ -14,17 +14,29 @@ const resizeOriginalImage = async records => Promise.all(records
   .flatMap(b => b.Records)
   .map(r => ({bucketId: r.s3.bucket.name, key: r.s3.object.key}))
   .map(async s3Object => {
-    if(!isNaN(s3Object.key.match(/([^/]+)/))) {
-      widths.filter( width => width < Number(s3Object.key.match(/([^/]+)/)))
-      return widths;
-    }
     const originalImage = (await getOriginalImage(s3Object.bucketId, s3Object.key)).Body;
-    return Promise.all(widths.map(async width => {
+    const originalImageMetadata = await sharp(originalImage).metadata();
+    const filteredWidthsSmaller = widths.filter(width => width < originalImageMetadata.width);
+    const filteredWidthsBigger = widths.filter(width => width >= originalImageMetadata.width);
+    await Promise.all(filteredWidthsBigger.map(async width => {
+      const destKey = `thumbnails/${width}/${s3Object.key.replace('original/', '')}`;
+      return s3.putObject({Bucket: s3Object.bucketId,
+        Body: originalImage,
+        Key: destKey,
+        ACL: 'public-read',
+          ContentType: `image/${originalImageMetadata.format}`}
+        ).promise();
+    }));
+    return Promise.all(filteredWidthsSmaller.map(async width => {
       const image = await sharp(originalImage).resize( {width: width} ).toBuffer();
       const destKey = `thumbnails/${width}/${s3Object.key.replace('original/', '')}`;
-
-      return s3.putObject({Bucket: s3Object.bucketId, Body: image, Key: destKey, ACL: 'public-read'}).promise();
-    }))
+      return s3.putObject({Bucket: s3Object.bucketId,
+        Body: image,
+        Key: destKey,
+        ACL: 'public-read',
+        ContentType: `image/${originalImageMetadata.format}`}
+        ).promise();
+    }));
   })
 );
 
@@ -32,12 +44,12 @@ exports.lambda_handler = async event => {
   try {
     await resizeOriginalImage(event.Records);
     return {
-      "statusCode": 200
+      status: 200
     };
   } catch(err) {
     console.log(err);
     return {
-      status: 406,
+      status: 400,
       code: err.code,
       message: err.message
     }

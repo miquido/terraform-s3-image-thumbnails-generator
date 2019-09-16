@@ -209,7 +209,7 @@ resource "aws_lambda_function" "default" {
   role             = "${aws_iam_role.default.arn}"
   handler          = "index.lambda_handler"
   timeout          = 60                                                   # 60 sec
-
+  memory_size      = 512
   environment {
     variables = {
       THUMBNAIL_WIDTHS = "${join(",", var.thumbnail_widths)}"
