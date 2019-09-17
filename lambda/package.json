@@ -8,6 +8,6 @@
   },
   "author": "",
   "dependencies": {
-    "sharp": "^0.23.0"
+    "sharp": "0.23.0"
   }
 }
