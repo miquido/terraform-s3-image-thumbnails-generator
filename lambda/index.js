@@ -34,8 +34,6 @@ const resizeOriginalImage = async records => Promise.all(records
       const image = await sharp(originalImage).resize( {width: width} ).toBuffer();
       return putImageToS3(s3Object, image, width, originalImageMetadata);
     });
-    console.log('bigger' + putBigger );
-    console.log('smaller' + putSmaller );
 
     return Promise.all(putBigger.concat(putSmaller));
   })
