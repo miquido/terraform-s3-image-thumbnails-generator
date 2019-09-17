@@ -7,7 +7,7 @@ Array.prototype.flatMap = function(lambda) {
   return Array.prototype.concat.apply([], this.map(lambda));
 };
 
-const getOriginalImage = async (bucket, key) => await s3.getObject({ Bucket: bucket, Key: key }).promise();
+const getOriginalImage = async (bucket, key) => s3.getObject({ Bucket: bucket, Key: key }).promise();
 
 const putImageToS3 = async (s3Object, imageBody, width, metadata) => {
   return s3.putObject({Bucket: s3Object.bucketId,
