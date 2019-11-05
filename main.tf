@@ -1,44 +1,42 @@
 module "label" {
-  source = "git::https://github.com/cloudposse/terraform-terraform-label.git?ref=tags/0.2.1"
+  source = "git::https://github.com/cloudposse/terraform-terraform-label.git?ref=tags/0.4.0"
 
-  namespace  = "${var.namespace}"
-  name       = "${var.name}"
-  stage      = "${var.stage}"
-  delimiter  = "${var.delimiter}"
-  attributes = "${var.attributes}"
-  tags       = "${var.tags}"
-  enabled    = "true"
+  enabled    = true
+  namespace  = var.namespace
+  name       = var.name
+  stage      = var.stage
+  delimiter  = var.delimiter
+  attributes = var.attributes
+  tags       = var.tags
 }
 
 module "s3-bucket-api-images" {
-  source = "git::https://github.com/cloudposse/terraform-aws-s3-bucket.git?ref=tags/0.3.1"
+  source = "git::https://github.com/cloudposse/terraform-aws-s3-bucket.git?ref=tags/0.6.0"
 
-  enabled            = "true"
-  user_enabled       = "true"
-  versioning_enabled = "false"
-  name               = "${var.name}"
-  namespace          = "${var.namespace}"
-  name               = "${var.name}"
-  stage              = "${var.stage}"
-  delimiter          = "${var.delimiter}"
-  attributes         = "${var.attributes}"
+  enabled            = true
+  user_enabled       = true
+  versioning_enabled = false
+  name               = var.name
+  namespace          = var.namespace
+  stage              = var.stage
+  delimiter          = var.delimiter
+  attributes         = var.attributes
   sse_algorithm      = "AES256"
-
-  tags = "${module.label.tags}"
+  tags               = module.label.tags
 }
 
 resource "aws_s3_bucket_notification" "new_object" {
-  bucket = "${module.s3-bucket-api-images.bucket_id}"
+  bucket = module.s3-bucket-api-images.bucket_id
 
   queue {
-    queue_arn = "${aws_sqs_queue.new_object.arn}"
-    events    = ["s3:ObjectCreated:*"]
+    queue_arn     = aws_sqs_queue.new_object.arn
+    events        = ["s3:ObjectCreated:*"]
     filter_prefix = "original/"
   }
 }
 
 resource "aws_sqs_queue" "new_object" {
-  name = "${module.label.id}"
+  name = module.label.id
 
   message_retention_seconds = 86400 # 1 day
 
@@ -56,14 +54,16 @@ resource "aws_sqs_queue" "new_object" {
     "deadLetterTargetArn": "${aws_sqs_queue.new_object_deadletter.arn}",
     "maxReceiveCount": 5
   }
-  EOF
 
-  tags = "${module.label.tags}"
+EOF
+
+
+  tags = module.label.tags
 }
 
 #let's s3 send events to this queue
 resource "aws_sqs_queue_policy" "s3_send_message_2_sqs" {
-  queue_url = "${aws_sqs_queue.new_object.id}"
+  queue_url = aws_sqs_queue.new_object.id
 
   policy = <<EOF
 {
@@ -84,6 +84,7 @@ resource "aws_sqs_queue_policy" "s3_send_message_2_sqs" {
   ]
 }
 EOF
+
 }
 
 resource "aws_sqs_queue" "new_object_deadletter" {
@@ -91,7 +92,7 @@ resource "aws_sqs_queue" "new_object_deadletter" {
 
   message_retention_seconds = 864000 # 10 days
 
-  tags = "${module.label.tags}"
+  tags = module.label.tags
 }
 
 data "aws_iam_policy_document" "assume_role" {
@@ -127,7 +128,7 @@ data "aws_iam_policy_document" "default" {
 
     effect = "Allow"
 
-    resources = ["${aws_sqs_queue.new_object.arn}"]
+    resources = [aws_sqs_queue.new_object.arn]
   }
 
   statement {
@@ -145,36 +146,32 @@ data "aws_iam_policy_document" "default" {
     effect = "Allow"
 
     resources = [
-      "${module.s3-bucket-api-images.bucket_arn}",
+      module.s3-bucket-api-images.bucket_arn,
       "${module.s3-bucket-api-images.bucket_arn}/*",
     ]
   }
 }
 
 locals {
-  function_name = "${module.label.id}"
-
-  # to make the module path relative
-  # since 0.12 path.module and path.root is relative so this workaround could be removed
-  # https://github.com/hashicorp/terraform/issues/20064#issuecomment-456452970
-  lambda_zip_filename = ".${replace(path.module, path.root, "")}/lambda.zip"
+  function_name       = module.label.id
+  lambda_zip_filename = "${path.module}/lambda.zip"
 }
 
 resource "aws_iam_role" "default" {
-  name               = "${local.function_name}"
-  assume_role_policy = "${data.aws_iam_policy_document.assume_role.json}"
+  name               = local.function_name
+  assume_role_policy = data.aws_iam_policy_document.assume_role.json
 }
 
 resource "aws_iam_role_policy" "default" {
-  name   = "${local.function_name}"
-  role   = "${aws_iam_role.default.name}"
-  policy = "${data.aws_iam_policy_document.default.json}"
+  name   = local.function_name
+  role   = aws_iam_role.default.name
+  policy = data.aws_iam_policy_document.default.json
 }
 
 resource "null_resource" "npm" {
-  triggers {
-    main         = "${base64sha256(file("${path.module}/lambda/index.js"))}"
-    requirements = "${base64sha256(file("${path.module}/lambda/package.json"))}"
+  triggers = {
+    main         = filebase64sha256("${path.module}/lambda/index.js")
+    requirements = filebase64sha256("${path.module}/lambda/package.json")
   }
 
   provisioner "local-exec" {
@@ -187,41 +184,47 @@ data "external" "zip" {
   program = ["sh", "${path.module}/archive.sh"]
 
   query = {
-    working_dir = "${path.root}"
+    working_dir = path.root
     input_path  = "${path.module}/lambda"
-    output_path = "${local.lambda_zip_filename}"
+    output_path = local.lambda_zip_filename
   }
 
-  depends_on = ["null_resource.npm"]
+  depends_on = [null_resource.npm]
 }
 
 resource "aws_cloudwatch_log_group" "default" {
   name              = "/aws/lambda/${local.function_name}"
+  tags              = module.label.tags
   retention_in_days = 7
 }
 
 resource "aws_lambda_function" "default" {
-  filename         = "${lookup(data.external.zip.result, "output_path")}"
-  source_code_hash = "${lookup(data.external.zip.result, "output_hash")}"
-  function_name    = "${local.function_name}"
-  description      = "${local.function_name}"
+  filename         = data.external.zip.result["output_path"]
+  source_code_hash = data.external.zip.result["output_hash"]
+  function_name    = local.function_name
+  description      = local.function_name
   runtime          = "nodejs10.x"
-  role             = "${aws_iam_role.default.arn}"
+  role             = aws_iam_role.default.arn
   handler          = "index.lambda_handler"
-  timeout          = 60                                                   # 60 sec
+  tags             = module.label.tags
+  timeout          = 60 # 60 sec
   memory_size      = 512
   environment {
     variables = {
-      THUMBNAIL_WIDTHS = "${join(",", var.thumbnail_widths)}"
+      THUMBNAIL_WIDTHS = join(",", var.thumbnail_widths)
     }
   }
 
-  depends_on = ["aws_cloudwatch_log_group.default", "aws_iam_role_policy.default", "null_resource.npm"]
+  depends_on = [
+    aws_cloudwatch_log_group.default,
+    aws_iam_role_policy.default,
+    null_resource.npm,
+  ]
 }
 
 resource "aws_lambda_event_source_mapping" "new_object" {
-  event_source_arn = "${aws_sqs_queue.new_object.arn}"
-  function_name    = "${aws_lambda_function.default.arn}"
+  event_source_arn = aws_sqs_queue.new_object.arn
+  function_name    = aws_lambda_function.default.arn
 
   #maximum value
   batch_size = 10
