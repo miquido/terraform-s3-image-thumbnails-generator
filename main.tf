@@ -184,7 +184,6 @@ data "external" "zip" {
   program = ["sh", "${path.module}/archive.sh"]
 
   query = {
-    working_dir = path.root
     input_path  = "${path.module}/lambda"
     output_path = local.lambda_zip_filename
   }
@@ -200,7 +199,7 @@ resource "aws_cloudwatch_log_group" "default" {
 
 resource "aws_lambda_function" "default" {
   filename         = data.external.zip.result["output_path"]
-  source_code_hash = data.external.zip.result["output_hash"]
+  source_code_hash = filebase64sha256(data.external.zip.result["output_path"])
   function_name    = local.function_name
   description      = local.function_name
   runtime          = "nodejs10.x"
