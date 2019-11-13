@@ -168,29 +168,6 @@ resource "aws_iam_role_policy" "default" {
   policy = data.aws_iam_policy_document.default.json
 }
 
-resource "null_resource" "npm" {
-  triggers = {
-    main         = filebase64sha256("${path.module}/lambda/index.js")
-    requirements = filebase64sha256("${path.module}/lambda/package.json")
-  }
-
-  provisioner "local-exec" {
-    command     = "docker run -v \"$PWD\":/var/task lambci/lambda:build-nodejs10.x npm install sharp --force"
-    working_dir = "${path.module}/lambda"
-  }
-}
-
-data "external" "zip" {
-  program = ["sh", "${path.module}/archive.sh"]
-
-  query = {
-    input_path  = "${path.module}/lambda"
-    output_path = local.lambda_zip_filename
-  }
-
-  depends_on = [null_resource.npm]
-}
-
 resource "aws_cloudwatch_log_group" "default" {
   name              = "/aws/lambda/${local.function_name}"
   tags              = module.label.tags
@@ -198,8 +175,8 @@ resource "aws_cloudwatch_log_group" "default" {
 }
 
 resource "aws_lambda_function" "default" {
-  filename         = data.external.zip.result["output_path"]
-  source_code_hash = filebase64sha256(data.external.zip.result["output_path"])
+  filename         = local.lambda_zip_filename
+  source_code_hash = filebase64sha256(local.lambda_zip_filename)
   function_name    = local.function_name
   description      = local.function_name
   runtime          = "nodejs10.x"
@@ -217,7 +194,6 @@ resource "aws_lambda_function" "default" {
   depends_on = [
     aws_cloudwatch_log_group.default,
     aws_iam_role_policy.default,
-    null_resource.npm,
   ]
 }
 

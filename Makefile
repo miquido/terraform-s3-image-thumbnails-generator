@@ -7,6 +7,15 @@ export README_DEPS ?= docs/targets.md docs/terraform.md
 
 -include $(shell curl -sSL -o .build-harness "https://git.io/build-harness"; echo .build-harness)
 
-## Lint terraform code
-lint:
-	$(SELF) terraform:get-modules terraform:get-plugins terraform:validate
+build/deps:
+	docker run -v $(CURDIR)/lambda:/var/task lambci/lambda:build-nodejs10.x npm install
+
+build/zip: build/deps
+	cd lambda && zip -rqX lambda.zip ./*
+	mv lambda/lambda.zip lambda.zip
+
+build/remove-deps:
+	rm -rf lambda/node_modules
+
+build/clean: build/remove-deps build/zip
+	echo "Created lambda zip successfully"

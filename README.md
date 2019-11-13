@@ -23,6 +23,15 @@ module "s3-image-resizer" {
 
 }
 ```
+
+### Upgrading lambda
+
+1. Edit files in `src/` directory
+2. Run script:
+
+```sh
+make build/clean
+```
 ## Inputs
 
 | Name | Description | Type | Default | Required |
@@ -50,7 +59,6 @@ Available targets:
   help                                Help screen
   help/all                            Display help for all targets
   help/short                          This help short screen
-  lint                                Lint terraform code
 
 ```
 
@@ -79,11 +87,13 @@ Copyright © 2017-2019 [Miquido](https://miquido.com)
 
 ### Contributors
 
-|  [![Paweł Jędruch][pawcik_avatar]][pawcik_homepage]<br/>[Paweł Jędruch][pawcik_homepage] |
-|---|
+|  [![Paweł Jędruch][pawcik_avatar]][pawcik_homepage]<br/>[Paweł Jędruch][pawcik_homepage] | [![Konrad Obal][k911_avatar]][k911_homepage]<br/>[Konrad Obal][k911_homepage] |
+|---|---|
 
   [pawcik_homepage]: https://github.com/pawcik
   [pawcik_avatar]: https://github.com/pawcik.png?size=150
+  [k911_homepage]: https://github.com/k911
+  [k911_avatar]: https://github.com/k911.png?size=150
 
 
 
