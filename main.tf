@@ -14,7 +14,7 @@ module "s3-bucket-api-images" {
   source = "git::https://github.com/cloudposse/terraform-aws-s3-bucket.git?ref=tags/0.6.0"
 
   enabled            = true
-  user_enabled       = true
+  user_enabled       = var.user_enabled
   versioning_enabled = false
   name               = var.name
   namespace          = var.namespace

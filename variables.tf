@@ -37,3 +37,9 @@ variable "thumbnail_widths" {
   description = "Target widths of generated thumbnails"
 }
 
+variable "user_enabled" {
+  type        = bool
+  default     = true
+  description = "Whether to create IAM User with RW permissions to created s3 bucket"
+}
+

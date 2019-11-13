@@ -43,6 +43,7 @@ make build/clean
 | stage | Stage, e.g. 'prod', 'staging', 'dev', or 'test' | string | - | yes |
 | tags | Additional tags (e.g. `map('BusinessUnit','XYZ')` | map(string) | `<map>` | no |
 | thumbnail_widths | Target widths of generated thumbnails | list(string) | - | yes |
+| user_enabled | Whether to create IAM User with RW permissions to created s3 bucket | bool | `true` | no |
 
 ## Outputs
 
