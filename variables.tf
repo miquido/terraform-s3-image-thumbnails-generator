@@ -40,6 +40,29 @@ variable "thumbnail_widths" {
 variable "user_enabled" {
   type        = bool
   default     = true
-  description = "Whether to create IAM User with RW permissions to created s3 bucket"
+  description = "Whether to create IAM User with RW permissions to created s3 bucket. Ignored when `bucket_id` provided."
 }
 
+variable "s3_region" {
+  type        = string
+  default     = ""
+  description = "The AWS Region where S3 Bucket is created or should be created. By default it is the region of current AWS provider."
+}
+
+variable "s3_acl" {
+  type        = string
+  default     = "public-read"
+  description = "The canned ACL to apply. Defaults to `public-read`. See: https://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl"
+}
+
+variable "bucket_id" {
+  type        = string
+  default     = ""
+  description = "The ID of S3 Bucket to use. If provided module won't create S3 bucket itself."
+}
+
+variable "log_retention" {
+  type        = number
+  default     = 7
+  description = "Specifies the number of days you want to retain log events in the specified log group"
+}

@@ -13,7 +13,7 @@ module "label" {
 module "s3-bucket-api-images" {
   source = "git::https://github.com/cloudposse/terraform-aws-s3-bucket.git?ref=tags/0.6.0"
 
-  enabled            = true
+  enabled            = local.s3_bucket_enabled
   user_enabled       = var.user_enabled
   versioning_enabled = false
   name               = var.name
@@ -25,8 +25,14 @@ module "s3-bucket-api-images" {
   tags               = module.label.tags
 }
 
+locals {
+  s3_bucket_enabled    = var.bucket_id == ""
+  s3_bucket_images_id  = local.s3_bucket_enabled ? module.s3-bucket-api-images.bucket_id : var.bucket_id
+  s3_bucket_images_arn = local.s3_bucket_enabled ? module.s3-bucket-api-images.bucket_arn : "arn:aws:s3:::${var.bucket_id}"
+}
+
 resource "aws_s3_bucket_notification" "new_object" {
-  bucket = module.s3-bucket-api-images.bucket_id
+  bucket = local.s3_bucket_images_id
 
   queue {
     queue_arn     = aws_sqs_queue.new_object.arn
@@ -77,7 +83,7 @@ resource "aws_sqs_queue_policy" "s3_send_message_2_sqs" {
       "Resource": "${aws_sqs_queue.new_object.arn}",
       "Condition": {
         "ArnEquals": {
-          "aws:SourceArn": "${module.s3-bucket-api-images.bucket_arn}"
+          "aws:SourceArn": "${local.s3_bucket_images_arn}"
         }
       }
     }
@@ -146,8 +152,8 @@ data "aws_iam_policy_document" "default" {
     effect = "Allow"
 
     resources = [
-      module.s3-bucket-api-images.bucket_arn,
-      "${module.s3-bucket-api-images.bucket_arn}/*",
+      local.s3_bucket_images_arn,
+      "${local.s3_bucket_images_arn}/*",
     ]
   }
 }
@@ -171,8 +177,10 @@ resource "aws_iam_role_policy" "default" {
 resource "aws_cloudwatch_log_group" "default" {
   name              = "/aws/lambda/${local.function_name}"
   tags              = module.label.tags
-  retention_in_days = 7
+  retention_in_days = var.log_retention
 }
+
+data "aws_region" "current" {}
 
 resource "aws_lambda_function" "default" {
   filename         = local.lambda_zip_filename
@@ -187,6 +195,8 @@ resource "aws_lambda_function" "default" {
   memory_size      = 512
   environment {
     variables = {
+      S3_REGION        = var.s3_region == "" ? data.aws_region.current.name : var.s3_region
+      S3_ACL           = var.s3_acl
       THUMBNAIL_WIDTHS = join(",", var.thumbnail_widths)
     }
   }

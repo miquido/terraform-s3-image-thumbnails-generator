@@ -1,7 +1,10 @@
+const s3ACL = process.env.S3_ACL;
+const s3Region = process.env.S3_REGION;
+const widths = process.env.THUMBNAIL_WIDTHS.split(',').map(Number);
+
 const sharp = require('sharp');
 const S3 = require('aws-sdk/clients/s3');
-const s3 = new S3({region: 'us-east-2'});
-const widths = process.env.THUMBNAIL_WIDTHS.split(',').map(Number);
+const s3 = new S3({region: s3Region});
 
 Array.prototype.flatMap = function(lambda) {
   return Array.prototype.concat.apply([], this.map(lambda));
@@ -13,7 +16,7 @@ const putImageToS3 = async (s3Object, imageBody, width, metadata) => {
   return s3.putObject({Bucket: s3Object.bucketId,
     Body: imageBody,
     Key: `thumbnails/${width}/${s3Object.key.replace('original/', '')}`,
-    ACL: 'public-read',
+    ACL: s3ACL,
     ContentType: `image/${metadata.format}`}
   ).promise();
 };
