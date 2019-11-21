@@ -3,7 +3,8 @@
 | Name | Description | Type | Default | Required |
 |------|-------------|:----:|:-----:|:-----:|
 | attributes | Additional attributes (e.g. `1`) | list(string) | `<list>` | no |
-| bucket_id | The ID of S3 Bucket to use. If provided module won't create S3 bucket itself. | string | `` | no |
+| bucket_enabled | Whether to create S3 Bucket. If value is `false`, the argument `bucket_id` is required. | bool | `true` | no |
+| bucket_id | The ID of S3 Bucket to use. If provided module won't create S3 bucket itself. Required if `bucket_enabled=false`. | string | `` | no |
 | delimiter | Delimiter to be used between `namespace`, `stage`, `name` and `attributes` | string | `-` | no |
 | log_retention | Specifies the number of days you want to retain log events in the specified log group | number | `7` | no |
 | name | Solution name, e.g. 'app' or 'cluster' | string | `s3-image-resizer` | no |
@@ -13,7 +14,7 @@
 | stage | Stage, e.g. 'prod', 'staging', 'dev', or 'test' | string | - | yes |
 | tags | Additional tags (e.g. `map('BusinessUnit','XYZ')` | map(string) | `<map>` | no |
 | thumbnail_widths | Target widths of generated thumbnails | list(string) | - | yes |
-| user_enabled | Whether to create IAM User with RW permissions to created s3 bucket. Ignored when `bucket_id` provided. | bool | `true` | no |
+| user_enabled | Whether to create IAM User with RW permissions to created s3 bucket. Ignored when `bucket_enabled=false`. | bool | `true` | no |
 
 ## Outputs
 

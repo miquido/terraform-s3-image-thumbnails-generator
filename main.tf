@@ -13,7 +13,7 @@ module "label" {
 module "s3-bucket-api-images" {
   source = "git::https://github.com/cloudposse/terraform-aws-s3-bucket.git?ref=tags/0.6.0"
 
-  enabled            = local.s3_bucket_enabled
+  enabled            = var.bucket_enabled
   user_enabled       = var.user_enabled
   versioning_enabled = false
   name               = var.name
@@ -26,9 +26,8 @@ module "s3-bucket-api-images" {
 }
 
 locals {
-  s3_bucket_enabled    = var.bucket_id == ""
-  s3_bucket_images_id  = local.s3_bucket_enabled ? module.s3-bucket-api-images.bucket_id : var.bucket_id
-  s3_bucket_images_arn = local.s3_bucket_enabled ? module.s3-bucket-api-images.bucket_arn : "arn:aws:s3:::${var.bucket_id}"
+  s3_bucket_images_id  = var.bucket_enabled ? module.s3-bucket-api-images.bucket_id : var.bucket_id
+  s3_bucket_images_arn = var.bucket_enabled ? module.s3-bucket-api-images.bucket_arn : "arn:aws:s3:::${var.bucket_id}"
 }
 
 resource "aws_s3_bucket_notification" "new_object" {
