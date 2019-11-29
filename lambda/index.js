@@ -31,7 +31,7 @@ const resizeOriginalImage = async records => Promise.all(records
       return putImageToS3(s3Object, originalImage, width, originalImageMetadata);
     });
     const putSmaller = filteredWidthsSmaller.map(async width => {
-      const image = await sharp(originalImage).resize( {width: width} ).toBuffer();
+      const image = await sharp(originalImage).rotate().resize( {width: width} ).toBuffer();
       return putImageToS3(s3Object, image, width, originalImageMetadata);
     });
 

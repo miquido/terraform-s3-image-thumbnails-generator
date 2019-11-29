@@ -4,4 +4,5 @@ build-harness
 *.tfstate
 *.tfstate.backup
 .idea
+.DS_Store
 lambda.zip
