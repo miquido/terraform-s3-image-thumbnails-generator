@@ -4,4 +4,4 @@ build-harness
 *.tfstate
 *.tfstate.backup
 .idea
-lambda.zip
+

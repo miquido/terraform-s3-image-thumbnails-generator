@@ -23,17 +23,31 @@ module "s3-image-resizer" {
 
 }
 ```
+
+### Upgrading lambda
+
+1. Edit files in `src/` directory
+2. Run script:
+
+```sh
+make build/clean
+```
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|:----:|:-----:|:-----:|
-| attributes | Additional attributes (e.g. `1`) | list | `<list>` | no |
+| attributes | Additional attributes (e.g. `1`) | list(string) | `<list>` | no |
+| bucket_id | The ID of S3 Bucket to use. If provided module won't create S3 bucket itself. | string | `` | no |
 | delimiter | Delimiter to be used between `namespace`, `stage`, `name` and `attributes` | string | `-` | no |
+| log_retention | Specifies the number of days you want to retain log events in the specified log group | number | `7` | no |
 | name | Solution name, e.g. 'app' or 'cluster' | string | `s3-image-resizer` | no |
 | namespace | Namespace, which could be your organization name, e.g. 'eg' or 'cp' | string | - | yes |
+| s3_acl | The canned ACL to apply. Defaults to `public-read`. See: https://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl | string | `public-read` | no |
+| s3_region | The AWS Region where S3 Bucket is created or should be created. By default it is the region of current AWS provider. | string | `` | no |
 | stage | Stage, e.g. 'prod', 'staging', 'dev', or 'test' | string | - | yes |
-| tags | Additional tags (e.g. `map('BusinessUnit','XYZ')` | map | `<map>` | no |
-| thumbnail_widths | Target widths of generated thumbnails | list | - | yes |
+| tags | Additional tags (e.g. `map('BusinessUnit','XYZ')` | map(string) | `<map>` | no |
+| thumbnail_widths | Target widths of generated thumbnails | list(string) | - | yes |
+| user_enabled | Whether to create IAM User with RW permissions to created s3 bucket. Ignored when `bucket_id` provided. | bool | `true` | no |
 
 ## Outputs
 
@@ -50,7 +64,6 @@ Available targets:
   help                                Help screen
   help/all                            Display help for all targets
   help/short                          This help short screen
-  lint                                Lint terraform code
 
 ```
 
@@ -79,11 +92,13 @@ Copyright © 2017-2019 [Miquido](https://miquido.com)
 
 ### Contributors
 
-|  [![Paweł Jędruch][pawcik_avatar]][pawcik_homepage]<br/>[Paweł Jędruch][pawcik_homepage] |
-|---|
+|  [![Paweł Jędruch][pawcik_avatar]][pawcik_homepage]<br/>[Paweł Jędruch][pawcik_homepage] | [![Konrad Obal][k911_avatar]][k911_homepage]<br/>[Konrad Obal][k911_homepage] |
+|---|---|
 
   [pawcik_homepage]: https://github.com/pawcik
   [pawcik_avatar]: https://github.com/pawcik.png?size=150
+  [k911_homepage]: https://github.com/k911
+  [k911_avatar]: https://github.com/k911.png?size=150
 
 
 
