@@ -17,11 +17,21 @@ usage: |-
 
   }
   ```
+
+  ### Upgrading lambda
+
+  1. Edit files in `src/` directory
+  2. Run script:
+
+  ```sh
+  make build/clean
+  ```
+
 include:
   - "docs/terraform.md"
   - "docs/targets.md"
 contributors:
   - name: "Paweł Jędruch"
     github: "pawcik"
-
-
+  - name: "Konrad Obal"
+    github: "k911"
