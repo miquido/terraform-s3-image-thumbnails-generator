@@ -1,5 +1,5 @@
 module "label" {
-  source = "git::https://github.com/cloudposse/terraform-terraform-label.git?ref=tags/0.4.0"
+  source = "git::https://github.com/cloudposse/terraform-terraform-label.git"
 
   enabled    = true
   namespace  = var.namespace
@@ -11,7 +11,7 @@ module "label" {
 }
 
 module "s3-bucket-api-images" {
-  source = "git::https://github.com/cloudposse/terraform-aws-s3-bucket.git?ref=tags/0.6.0"
+  source = "git::https://github.com/cloudposse/terraform-aws-s3-bucket.git"
 
   enabled            = var.bucket_enabled
   user_enabled       = var.user_enabled

@@ -26,7 +26,7 @@ module "s3-image-resizer" {
 
 ### Upgrading lambda
 
-1. Edit files in `src/` directory
+1. Edit files in `lambda/` directory
 2. Run script:
 
 ```sh
