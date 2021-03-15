@@ -156,6 +156,30 @@ data "aws_iam_policy_document" "default" {
       "${local.s3_bucket_images_arn}/*",
     ]
   }
+
+  statement {
+    actions = [
+      "sns:Publish",
+      "sns:Subscribe"
+    ]
+
+    effect = "Allow"
+
+    resources = [
+      aws_sns_topic.image_thumbnails_generated.arn
+    ]
+  }
+
+  statement {
+    actions = [
+      "sns:Subscribe",
+      "sns:Receive"
+    ]
+
+    effect = "Allow"
+
+    resources = ["*"]
+  }
 }
 
 locals {
@@ -182,6 +206,10 @@ resource "aws_cloudwatch_log_group" "default" {
 
 data "aws_region" "current" {}
 
+resource "aws_sns_topic" "image_thumbnails_generated" {
+  name = "image-thumbnails-generated-topic"
+}
+
 resource "aws_lambda_function" "default" {
   filename         = local.lambda_zip_filename
   source_code_hash = filebase64sha256(local.lambda_zip_filename)
@@ -199,6 +227,7 @@ resource "aws_lambda_function" "default" {
       S3_ACL           = var.s3_acl
       THUMBNAIL_WIDTHS = join(",", var.thumbnail_widths)
       S3_ENCRYPTION    = "AES256"
+      SNS_TOPIC_ARN    = aws_sns_topic.image_thumbnails_generated.arn
     }
   }
 
