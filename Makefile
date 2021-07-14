@@ -12,8 +12,8 @@ build/lint:
 	@terraform fmt
 
 build/deps:
-	docker pull lambci/lambda:build-nodejs10.x
-	docker run -v $(CURDIR)/lambda:/var/task lambci/lambda:build-nodejs10.x npm install --production
+	docker pull lambci/lambda:build-nodejs12.x
+	docker run -v $(CURDIR)/lambda:/var/task lambci/lambda:build-nodejs12.x npm install --production
 
 build/zip: build/lint build/deps
 	cd lambda && zip -rqX lambda.zip ./*

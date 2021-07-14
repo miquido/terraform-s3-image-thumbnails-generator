@@ -38,6 +38,7 @@ resource "aws_s3_bucket_notification" "new_object" {
     events        = ["s3:ObjectCreated:*"]
     filter_prefix = "original/"
   }
+  depends_on = [aws_lambda_permission.s3_notification]
 }
 
 resource "aws_sqs_queue" "new_object" {
@@ -186,7 +187,7 @@ resource "aws_lambda_function" "default" {
   source_code_hash = filebase64sha256(local.lambda_zip_filename)
   function_name    = local.function_name
   description      = local.function_name
-  runtime          = "nodejs10.x"
+  runtime          = "nodejs12.x"
   role             = aws_iam_role.default.arn
   handler          = "index.lambda_handler"
   tags             = module.label.tags
@@ -197,12 +198,13 @@ resource "aws_lambda_function" "default" {
       S3_REGION        = var.s3_region == "" ? data.aws_region.current.name : var.s3_region
       S3_ACL           = var.s3_acl
       THUMBNAIL_WIDTHS = join(",", var.thumbnail_widths)
+      S3_ENCRYPTION    = "AES256"
     }
   }
 
   depends_on = [
     aws_cloudwatch_log_group.default,
-    aws_iam_role_policy.default,
+    aws_iam_role_policy.default
   ]
 }
 
@@ -212,4 +214,15 @@ resource "aws_lambda_event_source_mapping" "new_object" {
 
   #maximum value
   batch_size = 10
+}
+
+data "aws_caller_identity" "current" {}
+
+resource "aws_lambda_permission" "s3_notification" {
+  statement_id   = "AllowExecutionS3Notification"
+  action         = "lambda:InvokeFunction"
+  function_name  = aws_lambda_function.default.arn
+  principal      = "s3.amazonaws.com"
+  source_account = data.aws_caller_identity.current.account_id
+  source_arn     = local.s3_bucket_images_arn
 }

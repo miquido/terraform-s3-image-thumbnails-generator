@@ -1,5 +1,6 @@
 const s3ACL = process.env.S3_ACL;
 const s3Region = process.env.S3_REGION;
+const s3Encryption = process.env.S3_ENCRYPTION;
 const widths = process.env.THUMBNAIL_WIDTHS.split(',').map(Number);
 
 const sharp = require('sharp');
@@ -17,7 +18,8 @@ const putImageToS3 = async (s3Object, imageBody, width, metadata) => {
     Body: imageBody,
     Key: `thumbnails/${width}/${s3Object.key.replace('original/', '')}`,
     ACL: s3ACL,
-    ContentType: `image/${metadata.format}`}
+    ContentType: `image/${metadata.format}`,
+    ServerSideEncryption: s3Encryption }
   ).promise();
 };
 
