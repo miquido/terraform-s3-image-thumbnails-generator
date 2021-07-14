@@ -61,6 +61,12 @@ variable "bucket_enabled" {
   description = "Whether to create S3 Bucket. If value is `false`, the argument `bucket_id` is required."
 }
 
+variable "bucket_versioning_enabled" {
+  type        = bool
+  default     = true
+  description = "Whether to turn bucket versioning on"
+}
+
 variable "bucket_id" {
   type        = string
   default     = ""

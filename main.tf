@@ -15,7 +15,7 @@ module "s3-bucket-api-images" {
 
   enabled            = var.bucket_enabled
   user_enabled       = var.user_enabled
-  versioning_enabled = false
+  versioning_enabled = var.bucket_versioning_enabled
   name               = var.name
   namespace          = var.namespace
   stage              = var.stage
