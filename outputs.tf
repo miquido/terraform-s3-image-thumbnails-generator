@@ -13,3 +13,8 @@ output "bucket_id" {
   value       = module.s3-bucket-api-images.bucket_id
 }
 
+output "sns_topic_arn" {
+  description = "SNS topic for newly uploaded files"
+  value       = aws_sns_topic.image_thumbnails_generated.arn
+}
+

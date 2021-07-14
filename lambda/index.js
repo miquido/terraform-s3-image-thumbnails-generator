@@ -2,10 +2,13 @@ const s3ACL = process.env.S3_ACL;
 const s3Region = process.env.S3_REGION;
 const s3Encryption = process.env.S3_ENCRYPTION;
 const widths = process.env.THUMBNAIL_WIDTHS.split(',').map(Number);
+const snsTopicARN = process.env.SNS_TOPIC_ARN;
 
 const sharp = require('sharp');
 const S3 = require('aws-sdk/clients/s3');
 const s3 = new S3({region: s3Region});
+const SNS = require('aws-sdk/clients/sns');
+const sns = new SNS();
 
 Array.prototype.flatMap = function(lambda) {
   return Array.prototype.concat.apply([], this.map(lambda));
@@ -24,9 +27,6 @@ const putImageToS3 = async (s3Object, imageBody, width, metadata) => {
 };
 
 const resizeOriginalImage = async records => Promise.all(records
-  .map(r => JSON.parse(r.body))
-  .flatMap(b => b.Records)
-  .map(r => ({bucketId: r.s3.bucket.name, key: r.s3.object.key}))
   .map(async s3Object => {
     const originalImage = (await getOriginalImage(s3Object.bucketId, s3Object.key)).Body;
     const originalImageMetadata = await sharp(originalImage).metadata();
@@ -49,7 +49,20 @@ const resizeOriginalImage = async records => Promise.all(records
 
 exports.lambda_handler = async event => {
   try {
-    await resizeOriginalImage(event.Records);
+    const parsedRecords = event.Records
+      .map(r => JSON.parse(r.body))
+      .flatMap(b => b.Records)
+      .map(r => ({bucketId: r.s3.bucket.name, key: r.s3.object.key}));
+
+    await resizeOriginalImage(parsedRecords);
+
+    for (const record of parsedRecords) {
+      await sns.publish({
+        Message: JSON.stringify(record),
+        TopicArn: snsTopicARN,
+      }).promise();
+    }
+
     return {
       statusCode: 200
     };
