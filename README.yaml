@@ -1,5 +1,6 @@
 name: terraform-s3-image-thumbnails-generator
-bitbucket_repo: terraform-s3-image-thumbnails-generator
+repos:
+  gitlab: miquido/terraform/terraform-s3-image-thumbnails-generator
 badges: []
 related: []
 # description: ""
@@ -9,7 +10,7 @@ usage: |-
 
   ```hcl
   module "s3-image-resizer" {
-    source = "git::ssh://git@bitbucket.org/miquido/miquido-node-image-resizer-lambda?ref=master"
+    source = "git::ssh://git@gitlab.com:miquido/terraform/terraform-s3-image-thumbnails-generator.git?ref=master"
 
     namespace = "${var.project}"
     stage     = "${var.environment}"

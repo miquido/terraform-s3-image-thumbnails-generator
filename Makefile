@@ -7,7 +7,7 @@ export README_DEPS ?= docs/targets.md docs/terraform.md
 
 -include $(shell curl -sSL -o .build-harness "https://git.io/build-harness"; echo .build-harness)
 
-build/lint:
+lint:
 	@cd examples/complete && terraform init && terraform validate
 	@terraform fmt
 
