@@ -1,0 +1,14 @@
+service: image-resizer
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+
+plugins:
+  - serverless-offline
+
+functions:
+  resize:
+    handler: index.lambda_handler

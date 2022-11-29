@@ -8,6 +8,7 @@ const sharp = require('sharp');
 const S3 = require('aws-sdk/clients/s3');
 const s3 = new S3({region: s3Region});
 const SNS = require('aws-sdk/clients/sns');
+const convertHeic = require('heic-convert');
 const sns = new SNS();
 
 Array.prototype.flatMap = function(lambda) {
@@ -28,8 +29,16 @@ const putImageToS3 = async (s3Object, imageBody, width, metadata) => {
 
 const resizeOriginalImage = async records => Promise.all(records
   .map(async s3Object => {
-    const originalImage = (await getOriginalImage(s3Object.bucketId, s3Object.key)).Body;
-    const originalImageMetadata = await sharp(originalImage).metadata();
+    let originalImage = (await getOriginalImage(s3Object.bucketId, s3Object.key)).Body;
+    let originalImageMetadata = await sharp(originalImage).metadata();
+    if(originalImageMetadata?.format === 'heif') {
+      originalImage = await convertHeic({
+        buffer: originalImage,
+        format: 'JPEG',
+        quality: 1
+      });
+      originalImageMetadata = await sharp(originalImage).metadata();
+    }
     const filteredWidthsSmaller = widths.filter(width => width < originalImageMetadata.width);
     const filteredWidthsBigger = widths.filter(width => width >= originalImageMetadata.width);
     const putBigger = filteredWidthsBigger.map(async width => {

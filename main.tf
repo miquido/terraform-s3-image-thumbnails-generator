@@ -215,12 +215,12 @@ resource "aws_lambda_function" "default" {
   source_code_hash = filebase64sha256(local.lambda_zip_filename)
   function_name    = local.function_name
   description      = local.function_name
-  runtime          = "nodejs12.x"
+  runtime          = "nodejs14.x"
   role             = aws_iam_role.default.arn
   handler          = "index.lambda_handler"
   tags             = module.label.tags
   timeout          = 60 # 60 sec
-  memory_size      = 512
+  memory_size      = 1024
   environment {
     variables = {
       S3_REGION        = var.s3_region == "" ? data.aws_region.current.name : var.s3_region
