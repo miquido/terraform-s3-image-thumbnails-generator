@@ -1,13 +1,18 @@
 {
   "name": "image-resizer",
-  "version": "1.0.0",
-  "description": "Lambda to generate s3 thumbnails",
+  "version": "2.0.0",
+  "description": "Lambda to generate S3 thumbnails",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
-  "dependencies": {
-    "sharp": "0.23.0"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://gitlab.com/miquido/terraform/terraform-s3-image-thumbnails-generator"
+  },
+  "author": "miquido",
+  "engines": {
+    "node": ">=14.0"
   }
 }

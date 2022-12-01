@@ -11,16 +11,18 @@ lint:
 	@cd examples/complete && terraform init && terraform validate
 	@terraform fmt
 
-build/deps:
-	docker pull lambci/lambda:build-nodejs12.x
-	docker run -v $(CURDIR)/lambda:/var/task lambci/lambda:build-nodejs12.x npm install --production
+build/lambda:
+	docker pull public.ecr.aws/sam/build-nodejs14.x:1.66.0-20221129154622-x86_64
+	docker run -v $(CURDIR)/lambda:/var/task public.ecr.aws/sam/build-nodejs14.x:1.66.0-20221129154622-x86_64 npm install --production
 
-build/zip: build/lint build/deps
+build/lambda-layer:
+	docker pull public.ecr.aws/sam/build-nodejs14.x:1.66.0-20221129154622-x86_64
+	docker run -v $(CURDIR)/lambda-layer:/var/task public.ecr.aws/sam/build-nodejs14.x:1.66.0-20221129154622-x86_64 make
+
+build/lambda-zip: build/lambda
 	cd lambda && zip -rqX lambda.zip ./*
 	mv lambda/lambda.zip lambda.zip
 
-build/remove-deps:
-	@rm -rf lambda/node_modules
-
-build/clean: build/remove-deps build/zip
-	@echo -e "----------------------\nCreated lambda zip successfully"
+build/lambda-layer-zip: build/lambda-layer
+	cd lambda-layer && zip -rqX lambda-layer.zip ./*
+	mv lambda-layer/lambda-layer.zip lambda-layer.zip

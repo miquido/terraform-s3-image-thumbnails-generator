@@ -1,5 +1,6 @@
 module "label" {
-  source = "git::https://github.com/cloudposse/terraform-terraform-label.git"
+  source  = "cloudposse/label/terraform"
+  version = "0.8.0"
 
   enabled    = true
   namespace  = var.namespace
@@ -11,7 +12,8 @@ module "label" {
 }
 
 module "s3-bucket-api-images" {
-  source = "git::https://github.com/cloudposse/terraform-aws-s3-bucket.git"
+  source  = "cloudposse/s3-bucket/aws"
+  version = "3.0.0"
 
   enabled            = var.bucket_enabled
   user_enabled       = var.user_enabled
@@ -28,6 +30,7 @@ module "s3-bucket-api-images" {
 locals {
   s3_bucket_images_id  = var.bucket_enabled ? module.s3-bucket-api-images.bucket_id : var.bucket_id
   s3_bucket_images_arn = var.bucket_enabled ? module.s3-bucket-api-images.bucket_arn : "arn:aws:s3:::${var.bucket_id}"
+  selected_region      = var.s3_region == "" ? data.aws_region.current.name : var.s3_region
 }
 
 resource "aws_s3_bucket_notification" "new_object" {
@@ -122,7 +125,9 @@ data "aws_iam_policy_document" "default" {
 
     effect = "Allow"
 
-    resources = ["arn:aws:logs:*:*:*"]
+    resources = [
+      "arn:aws:logs:${local.selected_region}:*:log-group:/aws/lambda/${local.function_name}:*",
+    ]
   }
 
   statement {
@@ -183,8 +188,9 @@ data "aws_iam_policy_document" "default" {
 }
 
 locals {
-  function_name       = module.label.id
-  lambda_zip_filename = "${path.module}/lambda.zip"
+  function_name             = module.label.id
+  lambda_zip_filename       = "${path.module}/lambda.zip"
+  lambda_layer_zip_filename = "${path.module}/lambda-layer.zip"
 }
 
 resource "aws_iam_role" "default" {
@@ -215,21 +221,26 @@ resource "aws_lambda_function" "default" {
   source_code_hash = filebase64sha256(local.lambda_zip_filename)
   function_name    = local.function_name
   description      = local.function_name
-  runtime          = "nodejs12.x"
+  runtime          = "nodejs14.x"
   role             = aws_iam_role.default.arn
   handler          = "index.lambda_handler"
   tags             = module.label.tags
-  timeout          = 60 # 60 sec
-  memory_size      = 512
+  timeout          = 120 # 2 minutes
+  memory_size      = 1024
+  architectures    = ["x86_64"]
   environment {
     variables = {
-      S3_REGION        = var.s3_region == "" ? data.aws_region.current.name : var.s3_region
+      S3_REGION        = local.selected_region
       S3_ACL           = var.s3_acl
       THUMBNAIL_WIDTHS = join(",", var.thumbnail_widths)
       S3_ENCRYPTION    = "AES256"
       SNS_TOPIC_ARN    = aws_sns_topic.image_thumbnails_generated.arn
     }
   }
+
+  layers = [
+    aws_lambda_layer_version.lambda_layer.arn
+  ]
 
   depends_on = [
     aws_cloudwatch_log_group.default,
@@ -254,4 +265,14 @@ resource "aws_lambda_permission" "s3_notification" {
   principal      = "s3.amazonaws.com"
   source_account = data.aws_caller_identity.current.account_id
   source_arn     = local.s3_bucket_images_arn
+}
+
+# Lambda layer
+resource "aws_lambda_layer_version" "lambda_layer" {
+  filename         = local.lambda_layer_zip_filename
+  layer_name       = "${local.function_name}-layer"
+  source_code_hash = filebase64sha256(local.lambda_layer_zip_filename)
+
+  compatible_architectures = ["x86_64"]
+  compatible_runtimes      = ["nodejs14.x"]
 }

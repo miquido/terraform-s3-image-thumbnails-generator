@@ -6,23 +6,25 @@ const snsTopicARN = process.env.SNS_TOPIC_ARN;
 
 const sharp = require('sharp');
 const S3 = require('aws-sdk/clients/s3');
-const s3 = new S3({region: s3Region});
+const s3 = new S3({ region: s3Region });
 const SNS = require('aws-sdk/clients/sns');
 const sns = new SNS();
 
-Array.prototype.flatMap = function(lambda) {
+Array.prototype.flatMap = function (lambda) {
   return Array.prototype.concat.apply([], this.map(lambda));
 };
 
 const getOriginalImage = async (bucket, key) => s3.getObject({ Bucket: bucket, Key: key }).promise();
 
 const putImageToS3 = async (s3Object, imageBody, width, metadata) => {
-  return s3.putObject({Bucket: s3Object.bucketId,
+  return s3.putObject({
+    Bucket: s3Object.bucketId,
     Body: imageBody,
     Key: `thumbnails/${width}/${s3Object.key.replace('original/', '')}`,
     ACL: s3ACL,
     ContentType: `image/${metadata.format}`,
-    ServerSideEncryption: s3Encryption }
+    ServerSideEncryption: s3Encryption
+  }
   ).promise();
 };
 
@@ -37,9 +39,10 @@ const resizeOriginalImage = async records => Promise.all(records
     });
     const putSmaller = filteredWidthsSmaller.map(async width => {
       const image = await sharp(originalImage)
-              .resize( {width} )
-              .rotate()
-              .toBuffer();
+        .heif({ compression: 'hevc' })
+        .resize({ width })
+        .rotate()
+        .toBuffer();
       return putImageToS3(s3Object, image, width, originalImageMetadata);
     });
 
@@ -52,7 +55,7 @@ exports.lambda_handler = async event => {
     const parsedRecords = event.Records
       .map(r => JSON.parse(r.body))
       .flatMap(b => b.Records)
-      .map(r => ({bucketId: r.s3.bucket.name, key: r.s3.object.key}));
+      .map(r => ({ bucketId: r.s3.bucket.name, key: r.s3.object.key }));
 
     await resizeOriginalImage(parsedRecords);
 
@@ -66,7 +69,7 @@ exports.lambda_handler = async event => {
     return {
       statusCode: 200
     };
-  } catch(err) {
+  } catch (err) {
     console.log(err);
     return {
       statusCode: 400,

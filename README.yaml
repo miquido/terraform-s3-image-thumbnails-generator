@@ -12,20 +12,35 @@ usage: |-
   module "s3-image-resizer" {
     source = "git::ssh://git@gitlab.com:miquido/terraform/terraform-s3-image-thumbnails-generator.git?ref=master"
 
-    namespace = "${var.project}"
-    stage     = "${var.environment}"
+    namespace        = "${var.project}"
+    stage            = "${var.environment}"
     thumbnail_widths = [1200,800,600,400,200]
 
+    namespace                 = var.project
+    stage                     = var.environment
+    name                      = "image-resizer"
+    thumbnail_widths          = [1200, 800, 600, 400, 200]
+    user_enabled              = false
+    s3_region                 = var.aws_region
+    s3_acl                    = "private"
+    bucket_enabled            = true
+    bucket_versioning_enabled = true
+    log_retention             = 7
+    tags                      = var.tags
   }
   ```
 
-  ### Upgrading lambda
+  ### Building lambda
+
+  ## Warning: This process requires x86 compatible machine (does not work currently on ARM).
 
   1. Edit files in `src/` directory
   2. Run script:
 
   ```sh
-  make build/clean
+  make lint
+  make build/lambda-zip
+  make build/lambda-layer-zip
   ```
 
 include:

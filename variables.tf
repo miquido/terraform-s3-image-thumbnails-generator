@@ -51,8 +51,8 @@ variable "s3_region" {
 
 variable "s3_acl" {
   type        = string
-  default     = "public-read"
-  description = "The canned ACL to apply. Defaults to `public-read`. See: https://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl"
+  default     = "private"
+  description = "The canned ACL to apply. Defaults to `private`. See: https://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl"
 }
 
 variable "bucket_enabled" {
