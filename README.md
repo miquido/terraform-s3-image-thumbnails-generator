@@ -55,13 +55,13 @@ make build/lambda-layer-zip
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.0 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | ~> 4.7 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | ~> 5.18 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | ~> 4.7 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | ~> 5.18 |
 
 ## Modules
 
@@ -150,7 +150,7 @@ Available targets:
 
 ## Copyright
 
-Copyright © 2017-2022 [Miquido](https://miquido.com)
+Copyright © 2017-2023 [Miquido](https://miquido.com)
 
 
 
