@@ -13,7 +13,7 @@ module "label" {
 
 module "s3-bucket-api-images" {
   source  = "cloudposse/s3-bucket/aws"
-  version = "3.0.0"
+  version = "4.0.1"
 
   enabled            = var.bucket_enabled
   user_enabled       = var.user_enabled
