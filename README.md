@@ -68,7 +68,7 @@ make build/lambda-layer-zip
 | Name | Source | Version |
 |------|--------|---------|
 | <a name="module_label"></a> [label](#module\_label) | cloudposse/label/terraform | 0.8.0 |
-| <a name="module_s3-bucket-api-images"></a> [s3-bucket-api-images](#module\_s3-bucket-api-images) | cloudposse/s3-bucket/aws | 3.0.0 |
+| <a name="module_s3-bucket-api-images"></a> [s3-bucket-api-images](#module\_s3-bucket-api-images) | cloudposse/s3-bucket/aws | 4.0.1 |
 
 ## Resources
 
@@ -150,7 +150,7 @@ Available targets:
 
 ## Copyright
 
-Copyright © 2017-2022 [Miquido](https://miquido.com)
+Copyright © 2017-2023 [Miquido](https://miquido.com)
 
 
 
