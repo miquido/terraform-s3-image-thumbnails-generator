@@ -238,10 +238,6 @@ resource "aws_lambda_function" "default" {
     }
   }
 
-  layers = [
-    aws_lambda_layer_version.lambda_layer.arn
-  ]
-
   depends_on = [
     aws_cloudwatch_log_group.default,
     aws_iam_role_policy.default
@@ -265,14 +261,4 @@ resource "aws_lambda_permission" "s3_notification" {
   principal      = "s3.amazonaws.com"
   source_account = data.aws_caller_identity.current.account_id
   source_arn     = local.s3_bucket_images_arn
-}
-
-# Lambda layer
-resource "aws_lambda_layer_version" "lambda_layer" {
-  filename         = local.lambda_layer_zip_filename
-  layer_name       = "${local.function_name}-layer"
-  source_code_hash = filebase64sha256(local.lambda_layer_zip_filename)
-
-  compatible_architectures = ["x86_64"]
-  compatible_runtimes      = ["nodejs14.x"]
 }

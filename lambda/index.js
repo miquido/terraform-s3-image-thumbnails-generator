@@ -38,7 +38,6 @@ const resizeOriginalImage = async records => Promise.all(records
     });
     const putSmaller = filteredWidthsSmaller.map(async width => {
       const image = await sharp(originalImage)
-        .heif({ compression: 'hevc' })
         .resize({ width })
         .rotate()
         .toBuffer();
