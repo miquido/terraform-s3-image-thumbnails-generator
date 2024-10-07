@@ -5,10 +5,9 @@ const widths = process.env.THUMBNAIL_WIDTHS.split(',').map(Number);
 const snsTopicARN = process.env.SNS_TOPIC_ARN;
 
 const sharp = require('sharp');
-const S3 = require('aws-sdk/clients/s3');
-const s3 = new S3({ region: s3Region });
-const SNS = require('aws-sdk/clients/sns');
-const sns = new SNS();
+const aws = require("aws-sdk");
+const s3 = new aws.S3();
+const sns = new aws.SNS();
 
 Array.prototype.flatMap = function (lambda) {
   return Array.prototype.concat.apply([], this.map(lambda));
@@ -39,7 +38,6 @@ const resizeOriginalImage = async records => Promise.all(records
     });
     const putSmaller = filteredWidthsSmaller.map(async width => {
       const image = await sharp(originalImage)
-        .heif({ compression: 'hevc' })
         .resize({ width })
         .rotate()
         .toBuffer();
