@@ -221,7 +221,7 @@ resource "aws_lambda_function" "default" {
   source_code_hash = filebase64sha256(local.lambda_zip_filename)
   function_name    = local.function_name
   description      = local.function_name
-  runtime          = "nodejs14.x"
+  runtime          = "nodejs20.x"
   role             = aws_iam_role.default.arn
   handler          = "index.lambda_handler"
   tags             = module.label.tags
