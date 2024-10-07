@@ -4,15 +4,6 @@ include:
   - remote: "https://raw.githubusercontent.com/miquido/gitlab-templates/1.3.100/git-toolkit.yml"
   - remote: "https://raw.githubusercontent.com/miquido/gitlab-templates/1.3.100/gitlab-toolkit.yml"
 
-yarn:
-  image: node
-  script:
-    - cd lambda
-    - yarn
-  artifacts:
-    untracked: true
-  needs: []
-
 get-latest-terraform:
   extends: .get-latest-terraform
 
@@ -39,41 +30,3 @@ push_readme:
   stage: .post
   dependencies: ["docs"]
   needs: ["docs"]
-
-generate-lambda-zip:
-  tags:
-    - docker
-    - miquido
-  image:
-    name: public.ecr.aws/sam/build-nodejs20.x:1.125.0-20240926224212
-  stage: build
-  script:
-    - cd lambda
-    - npm install --production
-    - zip -rqX lambda.zip ./*
-    - mv lambda.zip ../lambda.zip
-  artifacts:
-    paths:
-      - lambda.zip
-    expire_in: 1 week
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-
-generate-lambda-layer-zip:
-  tags:
-    - docker
-    - miquido
-  image:
-    name: public.ecr.aws/sam/build-nodejs20.x:1.125.0-20240926224212
-  stage: build
-  script:
-    - cd lambda-layer
-    - make
-    - zip -rqX lambda-layer.zip ./*
-    - mv lambda-layer.zip ../lambda-layer.zip
-  artifacts:
-    paths:
-      - lambda-layer.zip
-    expire_in: 1 week
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
