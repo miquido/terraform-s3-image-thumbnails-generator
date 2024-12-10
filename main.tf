@@ -213,7 +213,7 @@ resource "aws_cloudwatch_log_group" "default" {
 data "aws_region" "current" {}
 
 resource "aws_sns_topic" "image_thumbnails_generated" {
-  name = "image-thumbnails-generated-topic"
+  name = "${var.namespace}-${var.stage}-image-thumbnails-generated-topic"
 }
 
 resource "aws_lambda_function" "default" {
